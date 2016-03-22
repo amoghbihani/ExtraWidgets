@@ -3,6 +3,7 @@ package extras.widget.hashtagedittext;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextWatcher;
@@ -14,15 +15,31 @@ import android.widget.FrameLayout;
 
 public class HashTagEditText extends EditText{
     private static final String TAG = "HashTagEditText";
+    private static final String BLOCKED_CHAR_SET = "~^|$%&*!-@()[]{}:?'\",;+/=\\<>`£¥€¢•©"
+            + "\u0394\u20AC\u2122\251\256\u220F\u2293\u22F9\u03A0\u04B0\u2022"
+            + "\u221A\367\327\266\u2206\243\242\245\260\u2105\u263A\u2665";
 
     private TagList mTagList = new TagList();
     private TagClient mTagClient = new TagClient();
     private int mTagLayoutId = -1;
     private FrameLayout.LayoutParams mLayoutParams;
 
-    private TextWatcher mTextWatcher = new TextWatcher() {
-        private int mPreviousStart = 0;
+    private InputFilter mInputFilter = new InputFilter() {
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end,
+                                   Spanned dest, int dstart, int dend) {
+            if (end > start) {
+                for (int index = start; index < end; index++) {
+                    if (BLOCKED_CHAR_SET.contains(String.valueOf(source.charAt(index)))) {
+                        return "";
+                    }
+                }
+            }
+            return null;
+        }
+    };
 
+    private TextWatcher mTextWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
 
@@ -30,11 +47,10 @@ public class HashTagEditText extends EditText{
         public void onTextChanged(CharSequence s, int start, int before, int count) {
             Log.d(TAG, "onTextChanged " + start + " " + before + " " + count);
             if (count == 1 && getText().charAt(start) == ' ') {
-                createTag(mPreviousStart, start);
+                createTag(getWordStart(start), start);
             } else if (before > count) {
                 checkAndRemoveTag(start + count);
             }
-            mPreviousStart = start;
             mTagList.updateEntries(start, count - before);
         }
 
@@ -80,9 +96,20 @@ public class HashTagEditText extends EditText{
 
     private void initialize() {
         addTextChangedListener(mTextWatcher);
+        setFilters(new InputFilter[] {mInputFilter});
         mLayoutParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT);
+    }
+
+    private int getWordStart(int pos) {
+        int start = mTagList.getPreviousTagEnd(pos);
+        for (; start < getText().length(); ++start) {
+            if (getText().charAt(start) != ' ') {
+                break;
+            }
+        }
+        return start;
     }
 
     private void createTag(int start, int end) {
@@ -96,9 +123,9 @@ public class HashTagEditText extends EditText{
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             mTagList.insert(currentTag);
         } catch (IndexOutOfBoundsException ex) {
-            Log.d(TAG, ex.getMessage());
+            Log.d(TAG, "" + ex.getMessage());
         } catch (NullPointerException ex) {
-            Log.d(TAG, ex.getMessage());
+            Log.d(TAG, "" + ex.getMessage());
         }
     }
 

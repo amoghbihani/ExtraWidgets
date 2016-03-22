@@ -33,6 +33,17 @@ class TagList extends LinkedList {
         return null;
     }
 
+    public int getPreviousTagEnd(int pos) {
+        int end = 0;
+        for (int i = size() - 1; i >= 0; --i) {
+            if (getTag(i).end() < pos) {
+                end = getTag(i).end();
+                break;
+            }
+        }
+        return end;
+    }
+
     public Tag getTag(int index) {
         return (Tag) get(index);
     }

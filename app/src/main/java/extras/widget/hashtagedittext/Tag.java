@@ -89,7 +89,6 @@ class Tag {
         textView.setCompoundDrawablesWithIntrinsicBounds(
                 0, 0, android.R.drawable.presence_offline, 0);
         textView.setTextColor(Color.BLACK);
-        textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         textView.setBackgroundColor(Color.parseColor("#FAFAFA"));
         textView.setPadding(4, 4, 4, 4);
 
