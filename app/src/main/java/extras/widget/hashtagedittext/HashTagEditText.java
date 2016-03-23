@@ -86,6 +86,11 @@ public class HashTagEditText extends EditText{
         initialize();
     }
 
+    public void setTagText(CharSequence charSequence) {
+        setText(charSequence);
+        createTags();
+    }
+
     public void setTagLayout(int layoutId) {
         mTagLayoutId = layoutId;
     }
@@ -141,5 +146,21 @@ public class HashTagEditText extends EditText{
 
     private void checkAndRemoveTag(int end) {
         removeTag(mTagList.getContainingTag(end));
+    }
+
+    private void createTags() {
+        mTagList.clear();
+        CharSequence text = getText();
+        for (int i = 0; i < length(); ++i) {
+            while (i < length() && text.charAt(i) == ' ') {
+                ++i;
+            }
+            int start = i;
+            while (i < length() && text.charAt(i) != ' ') {
+                ++i;
+            }
+            int end = i;
+            createTag(start, end);
+        }
     }
 }
