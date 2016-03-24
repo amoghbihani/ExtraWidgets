@@ -87,7 +87,12 @@ public class HashTagEditText extends EditText{
     }
 
     public void setTagText(CharSequence charSequence) {
-        setText(charSequence);
+        StringBuilder str = new StringBuilder(charSequence);
+        if (str.charAt(str.length() - 1) != ' ') {
+            str.append(' ');
+        }
+
+        setText(str.toString());
         createTags();
     }
 
